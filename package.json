@@ -1,0 +1,50 @@
+{
+  "name": "kalendare",
+  "module": "index.ts",
+  "type": "module",
+  "scripts": {
+    "build": "./node_modules/.bin/nuxt.exe build",
+    "dev": "./node_modules/.bin/nuxt.exe dev",
+    "generate": "./node_modules/.bin/nuxt.exe generate",
+    "preview": "./node_modules/.bin/nuxt.exe preview",
+    "postinstall": "./node_modules/.bin/nuxt.exe prepare",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@nuxt/eslint-config": "^0.3.6",
+    "@nuxtjs/color-mode": "^3.4.0",
+    "@nuxtjs/tailwindcss": "^6.11.4",
+    "@rushstack/eslint-patch": "^1.10.2",
+    "@types/bun": "latest",
+    "@types/jsdom": "^21.1.6",
+    "@types/node": "^20.12.7",
+    "@vue/eslint-config-prettier": "^9.0.0",
+    "@vue/eslint-config-typescript": "^13.0.0",
+    "@vue/tsconfig": "^0.5.1",
+    "eslint": "^8.49.0",
+    "eslint-plugin-vue": "^9.24.1",
+    "prettier": "^3.2.5",
+    "shadcn-nuxt": "^0.10.2",
+    "typescript": "^5.4.5",
+    "vue-tsc": "^2.0.12"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@radix-icons/vue": "^1.0.0",
+    "@vee-validate/zod": "^4.12.6",
+    "@vueuse/core": "^10.9.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.0",
+    "lucide-vue-next": "^0.367.0",
+    "nuxt": "^3.11.2",
+    "pocketbase": "^0.21.1",
+    "radix-vue": "^1.7.0",
+    "tailwind-merge": "^2.2.2",
+    "tailwindcss-animate": "^1.0.7",
+    "vee-validate": "^4.12.6",
+    "vue": "^3.4.21",
+    "zod": "^3.22.4"
+  }
+}
