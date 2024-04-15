@@ -14,9 +14,9 @@ import * as zod from 'zod';
 import { toTypedSchema } from '@vee-validate/zod';
 import { useForm } from 'vee-validate';
 import { useToast } from '@/components/ui/toast/use-toast';
-import Toaster from '@/components/ui/toast/Toaster.vue';
 
 const { toast } = useToast();
+const loading = ref(false);
 
 const formSchema = toTypedSchema(
   zod.object({
@@ -33,12 +33,16 @@ const { $pb } = useNuxtApp();
 
 const onAuth = form.handleSubmit(async (authData) => {
   try {
+    loading.value = true;
+
     await $pb.collection('users').authWithPassword(authData.userName, authData.password);
   } catch (err) {
     toast({
       title: 'Ошибка входа',
       description: 'Проверьте корректность данных'
     });
+  } finally {
+    loading.value = false;
   }
 
   if ($pb.authStore.isValid) {
@@ -48,42 +52,50 @@ const onAuth = form.handleSubmit(async (authData) => {
 </script>
 
 <template>
-  <Card>
-    <form @submit="onAuth">
-      <CardHeader>
-        <CardTitle>Вход</CardTitle>
+  <div class="w-full h-screen flex justify-center items-center">
+    <ClientOnly>
+      <Card class="max-w-96">
+        <form @submit="onAuth">
+          <CardHeader>
+            <CardTitle>Вход</CardTitle>
 
-        <CardDescription> Введите данные для входа, чтобы продолжить </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <FormField key="form-item-3" v-slot="{ componentField }" name="userName">
-          <FormItem>
-            <FormLabel> Пользователь </FormLabel>
+            <CardDescription> Введите данные для входа, чтобы продолжить </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <FormField key="form-item-3" v-slot="{ componentField }" name="userName">
+              <FormItem>
+                <FormLabel> Пользователь </FormLabel>
 
-            <FormControl>
-              <Input type="text" v-bind="componentField" />
-            </FormControl>
+                <FormControl>
+                  <Input type="text" v-bind="componentField" />
+                </FormControl>
 
-            <FormDescription> Имя или почта </FormDescription>
-          </FormItem>
-        </FormField>
+                <FormDescription> Имя или почта </FormDescription>
+              </FormItem>
+            </FormField>
 
-        <FormField key="form-item-2" v-slot="{ componentField }" name="password">
-          <FormItem>
-            <FormLabel> Пароль </FormLabel>
+            <FormField key="form-item-2" v-slot="{ componentField }" name="password">
+              <FormItem>
+                <FormLabel> Пароль </FormLabel>
 
-            <FormControl>
-              <Input type="password" v-bind="componentField" />
-            </FormControl>
-          </FormItem>
-        </FormField>
-      </CardContent>
+                <FormControl>
+                  <Input type="password" v-bind="componentField" />
+                </FormControl>
+              </FormItem>
+            </FormField>
+          </CardContent>
 
-      <CardFooter>
-        <Button type="submit" variant="secondary">Войти</Button>
-      </CardFooter>
-    </form>
+          <CardFooter class="flex justify-between">
+            <Button type="submit" variant="secondary">Войти</Button>
 
-    <Toaster />
-  </Card>
+            <Loader v-if="loading" />
+          </CardFooter>
+        </form>
+      </Card>
+
+      <template #fallback>
+        <Loader />
+      </template>
+    </ClientOnly>
+  </div>
 </template>
