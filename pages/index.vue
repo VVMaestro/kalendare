@@ -1,19 +1,16 @@
 <script setup lang="ts">
 import TasksList from '@/components/TasksList.vue';
 import { Button } from '@/components/ui/button';
-import { usePocketBase } from '@/composables/usePocketBase';
 import { ExternalLinkIcon } from '@radix-icons/vue';
 
-const { pb } = usePocketBase();
+definePageMeta({
+  middleware: 'auth'
+});
 
-console.log(pb.authStore.isValid);
-
-if (!pb.authStore.isValid) {
-  navigateTo('/auth');
-}
+const { $pb } = useNuxtApp();
 
 function logOut() {
-  pb.authStore.clear();
+  $pb.authStore.clear();
   navigateTo('/auth');
 }
 </script>

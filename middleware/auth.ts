@@ -1,7 +1,7 @@
 export default defineNuxtRouteMiddleware(() => {
-  const { pb } = usePocketBase();
+  const { $pb } = useNuxtApp();
 
-  if (!pb.authStore.isValid) {
+  if (!$pb.authStore.isValid) {
     return navigateTo('/auth');
   }
 });

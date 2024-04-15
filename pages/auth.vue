@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { usePocketBase } from '@/composables/usePocketBase';
 import {
   Card,
   CardContent,
@@ -30,18 +29,20 @@ const form = useForm({
   validationSchema: formSchema
 });
 
-const { pb, authWithUserAndPassword } = usePocketBase();
+const { $pb } = useNuxtApp();
 
 const onAuth = form.handleSubmit(async (authData) => {
-  await authWithUserAndPassword(authData.userName, authData.password);
-
-  if (pb.authStore.isValid) {
-    navigateTo('/');
-  } else {
+  try {
+    await $pb.collection('users').authWithPassword(authData.userName, authData.password);
+  } catch (err) {
     toast({
       title: 'Ошибка входа',
       description: 'Проверьте корректность данных'
     });
+  }
+
+  if ($pb.authStore.isValid) {
+    navigateTo('/');
   }
 });
 </script>

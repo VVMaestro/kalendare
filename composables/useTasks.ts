@@ -1,6 +1,5 @@
 import type { ITask, ITaskCreate } from '@/types/tasks';
 import { type Ref, reactive, ref } from 'vue';
-import { usePocketBase } from './usePocketBase';
 
 interface IUseTasks {
   tasks: Set<ITask>;
@@ -10,21 +9,21 @@ interface IUseTasks {
 }
 
 export function useTasks(): IUseTasks {
-  const { pb } = usePocketBase();
+  const { $pb } = useNuxtApp();
 
   const tasks = reactive(new Set<ITask>());
   const loading = ref(false);
 
   const setLoading = (value: boolean) => {
     loading.value = value;
-  }
+  };
 
   const fetchTasksData = async (): Promise<ITask[]> => {
     try {
       setLoading(true);
 
-      const response = await pb.collection('tasks').getList(1, 50);
-  
+      const response = await $pb.collection('tasks').getList(1, 50);
+
       return response.items.map((taskData) => {
         return {
           id: taskData.id,
@@ -32,20 +31,20 @@ export function useTasks(): IUseTasks {
           done: taskData.done
         };
       });
-    } catch(error: unknown) {
-      console.error(error); 
-  
+    } catch (error: unknown) {
+      console.error(error);
+
       return [];
     } finally {
       setLoading(false);
     }
   };
-  
+
   const sendTask = async (taskCreateData: ITaskCreate) => {
     const { user, description } = taskCreateData;
-  
-    await pb.collection('tasks').create({ user, description });
-  
+
+    await $pb.collection('tasks').create({ user, description });
+
     return;
   };
 
@@ -66,17 +65,17 @@ export function useTasks(): IUseTasks {
       }
     }
 
-    await pb.collection('tasks').update(taskId, { done });
+    await $pb.collection('tasks').update(taskId, { done });
   };
 
-  const addTask = async(newTask: string) => {
-    if (!pb.authStore.model?.id) {
+  const addTask = async (newTask: string) => {
+    if (!$pb.authStore.model?.id) {
       throw new Error('User is not logged in');
     }
 
-    tasks.add({ id: 'fasdfadfasdf', description: newTask, done: false});
+    tasks.add({ id: 'fasdfadfasdf', description: newTask, done: false });
 
-    await sendTask({ user: pb.authStore.model.id, description: newTask });
+    await sendTask({ user: $pb.authStore.model.id, description: newTask });
 
     fetchTasksData();
   };
