@@ -8,8 +8,9 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Loader } from '@/components/ui/loader';
 import { Separator } from '@/components/ui/separator';
+import { onKeyStroke } from '@vueuse/core';
 
-const { tasks, addTask, setTaskDone, loading } = useTasks();
+const { tasks, addTask, setTaskDone, loading, unwatch } = await useTasks();
 
 const newTaskText = ref('');
 const addTaskMode = ref(false);
@@ -37,6 +38,26 @@ function onTaskCreate() {
 function onTaskDone(taskId: string, done: boolean) {
   setTaskDone(taskId, done);
 }
+
+function onAddTaskInputFocusChange(focused: boolean) {
+  if (!focused && !newTaskText.value) {
+    addTaskMode.value = false;
+  }
+}
+
+onKeyStroke(
+  'Escape',
+  (e) => {
+    e.preventDefault();
+
+    if (addTaskMode.value) {
+      addTaskMode.value = false;
+    }
+  },
+  { dedupe: true }
+);
+
+onBeforeUnmount(unwatch);
 </script>
 
 <template>
@@ -76,6 +97,7 @@ function onTaskDone(taskId: string, done: boolean) {
               focus-on-mount
               :model-value="newTaskText"
               @update:model-value="onNewTaskChange"
+              @update:focus="onAddTaskInputFocusChange"
             />
           </form>
         </li>

@@ -1,44 +1,51 @@
 import type { ITask, ITaskCreate } from '@/types/tasks';
-import { type Ref, reactive, ref } from 'vue';
+import type { RecordModel } from 'pocketbase';
+import { type Ref, reactive, type WatchStopHandle } from 'vue';
 
 interface IUseTasks {
   tasks: Set<ITask>;
   addTask: (newTask: string) => void;
   setTaskDone: (taskId: string, done: boolean) => void;
   loading: Ref<boolean>;
+  unwatch: WatchStopHandle;
 }
 
-export function useTasks(): IUseTasks {
+export async function useTasks(): Promise<IUseTasks> {
   const { $pb } = useNuxtApp();
 
+  const {
+    pending: loading,
+    data,
+    refresh
+  } = await useAsyncData('tasks', () => $pb.collection('tasks').getList(1, 50), {
+    lazy: true
+  });
+
   const tasks = reactive(new Set<ITask>());
-  const loading = ref(false);
 
-  const setLoading = (value: boolean) => {
-    loading.value = value;
-  };
-
-  const fetchTasksData = async (): Promise<ITask[]> => {
-    try {
-      setLoading(true);
-
-      const response = await $pb.collection('tasks').getList(1, 50);
-
-      return response.items.map((taskData) => {
-        return {
-          id: taskData.id,
-          description: taskData.description,
-          done: taskData.done
-        };
+  const fillListWithTasks = (records: RecordModel[]) => {
+    records.forEach((taskData) => {
+      tasks.add({
+        id: taskData.id,
+        description: taskData.description,
+        done: taskData.done
       });
-    } catch (error: unknown) {
-      console.error(error);
-
-      return [];
-    } finally {
-      setLoading(false);
-    }
+    });
   };
+
+  if (data.value) {
+    fillListWithTasks(data.value.items);
+  }
+
+  const unwatch = watch(data, (newData) => {
+    if (!newData) {
+      return;
+    }
+
+    tasks.clear();
+
+    fillListWithTasks(newData.items);
+  });
 
   const sendTask = async (taskCreateData: ITaskCreate) => {
     const { user, description } = taskCreateData;
@@ -46,14 +53,6 @@ export function useTasks(): IUseTasks {
     await $pb.collection('tasks').create({ user, description });
 
     return;
-  };
-
-  const receiveTasks = async () => {
-    const tasksData = await fetchTasksData();
-
-    for (const task of tasksData) {
-      tasks.add(task);
-    }
   };
 
   const setTaskDone = async (taskId: string, done: boolean) => {
@@ -77,15 +76,14 @@ export function useTasks(): IUseTasks {
 
     await sendTask({ user: $pb.authStore.model.id, description: newTask });
 
-    fetchTasksData();
+    refresh();
   };
-
-  receiveTasks();
 
   return {
     tasks,
     addTask,
     setTaskDone,
-    loading: loading
+    loading: loading,
+    unwatch
   };
 }

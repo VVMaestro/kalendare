@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { type HTMLAttributes, ref, onMounted } from 'vue';
-import { useVModel } from '@vueuse/core';
+import { type HTMLAttributes, ref } from 'vue';
+import { useFocus, useVModel } from '@vueuse/core';
 import { cn } from '@/lib/utils';
 
 const props = withDefaults(
@@ -12,25 +12,32 @@ const props = withDefaults(
     size?: 'lg' | 'md' | 'sm';
     focusOnMount?: boolean;
   }>(),
-  { size: 'md', focusOnMount: false }
+  {
+    size: 'md',
+    focusOnMount: false,
+    defaultValue: '',
+    modelValue: undefined,
+    class: ''
+  }
 );
+
+const { defaultValue, focusOnMount } = props;
 
 const emits = defineEmits<{
   (e: 'update:modelValue', payload: string | number): void;
+  (e: 'update:focus', payload: boolean): void;
 }>();
 
 const modelValue = useVModel(props, 'modelValue', emits, {
   passive: true,
-  defaultValue: props.defaultValue
+  defaultValue: defaultValue
 });
 
 const inputRef = ref();
 
-onMounted(() => {
-  if (props.focusOnMount && inputRef.value) {
-    inputRef.value.focus();
-  }
-});
+const { focused } = useFocus(inputRef, { initialValue: focusOnMount });
+
+watch(focused, () => emits('update:focus', focused.value));
 </script>
 
 <template>
